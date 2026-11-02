@@ -1,9 +1,6 @@
 name: renderer
 
 on:
-  push:
-    branches:
-      - "fix/opengl-40-shader-portability"
   pull_request:
     paths:
       - "crates/horizon-client-render/**"
