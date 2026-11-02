@@ -18,7 +18,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$Repo = "gerdaroot/Horizon-Offline-Launcher"
+$Repo = "ShanLim655/Horizon-OpenGL-Compatibility"
 $Asset = "horizon-launcher-windows-x64.zip"
 $Name = "Horizon Offline Launcher"
 $Dir = Join-Path $env:LOCALAPPDATA "Programs\HorizonOfflineLauncher"
