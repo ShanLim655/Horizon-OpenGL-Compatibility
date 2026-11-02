@@ -8294,10 +8294,30 @@ mod tests {
                 .filter(|name| !name.starts_with("//"))
                 .collect()
         };
-        let terrain = fields(include_str!("terrain.wgsl"));
-        assert_eq!(terrain, fields(include_str!("entity.wgsl")));
+        let terrain_source = include_str!("terrain.wgsl");
+        let entity_source = include_str!("entity.wgsl");
+        let terrain = fields(terrain_source);
+        assert_eq!(terrain, fields(entity_source));
         let rust = fields(include_str!("gfx.rs"));
         assert_eq!(terrain, rust);
+        for source in [terrain_source, entity_source] {
+            assert!(source.contains("colored_lights: array<vec4<f32>, 32>"));
+            assert!(!source.contains("array<array<vec4<f32>"));
+            assert!(source.contains("globals.colored_lights[i * 2u]"));
+            assert!(source.contains("globals.colored_lights[i * 2u + 1u]"));
+        }
+        assert_eq!(std::mem::size_of::<crate::dynamic_light::Colored>(), 32);
+        assert_eq!(
+            std::mem::size_of::<[crate::dynamic_light::Colored; crate::dynamic_light::MAX]>(),
+            32 * crate::dynamic_light::MAX
+        );
+        assert_eq!(std::mem::offset_of!(super::Globals, colored_lights), 576);
+        let lights: [crate::dynamic_light::Colored; crate::dynamic_light::MAX] =
+            std::array::from_fn(|i| [[i as f32, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]]);
+        let flat = bytemuck::cast_slice::<_, f32>(&lights);
+        assert_eq!(flat.len(), 8 * crate::dynamic_light::MAX);
+        assert_eq!(&flat[..8], &[0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
+        assert_eq!(&flat[8..16], &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
     }
     #[test]
     fn selection_outline_uses_vanilla_pixel_width() {

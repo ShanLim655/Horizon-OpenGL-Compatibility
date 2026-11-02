@@ -1,0 +1,75 @@
+name: renderer
+
+on:
+  pull_request:
+    paths:
+      - "crates/horizon-client-render/**"
+      - "launcher/**"
+      - "packaging/windows/**"
+      - "packaging/icons/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/renderer.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  renderer:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: renderer
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libasound2-dev libudev-dev
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Run renderer tests
+        run: cargo test --locked -p horizon-client-render
+      - name: Run renderer Clippy
+        run: cargo clippy --locked -p horizon-client-render --all-targets -- -D warnings
+
+  windows-installer:
+    needs: renderer
+    runs-on: windows-latest
+    timeout-minutes: 90
+    env:
+      RUSTFLAGS: -C target-feature=+crt-static
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: launcher
+          key: windows-installer
+      - name: Build the Windows launcher
+        working-directory: launcher
+        run: cargo build --release --locked
+      - name: Build the Windows installer
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\\Inno Setup 6\\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+          New-Item -ItemType Directory -Force dist | Out-Null
+          & $iscc /Q "/DAppVersion=0.0.0-dev" "/DSource=$PWD\\launcher\\target\\release\\horizon-launcher.exe" "/O$PWD\\dist" packaging\\windows\\setup.iss
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Get-ChildItem dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Horizon-OpenGL-Compatibility-Setup
+          path: dist/Horizon-Offline-Launcher-Setup.exe
+          if-no-files-found: error
+          retention-days: 14
