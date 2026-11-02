@@ -8312,9 +8312,20 @@ mod tests {
             32 * crate::dynamic_light::MAX
         );
         assert_eq!(
-            std::mem::offset_of!(super::Globals, colored_lights) % 16,
-            0
+            std::mem::offset_of!(super::Globals, colored_lights),
+            576
         );
+        let lights: [crate::dynamic_light::Colored; crate::dynamic_light::MAX] =
+            std::array::from_fn(|i| {
+                [
+                    [i as f32, 2.0, 3.0, 4.0],
+                    [5.0, 6.0, 7.0, 8.0],
+                ]
+            });
+        let flat = bytemuck::cast_slice::<_, f32>(&lights);
+        assert_eq!(flat.len(), 32 * crate::dynamic_light::MAX);
+        assert_eq!(&flat[..8], &[0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
+        assert_eq!(&flat[8..16], &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
     }
     #[test]
     fn selection_outline_uses_vanilla_pixel_width() {

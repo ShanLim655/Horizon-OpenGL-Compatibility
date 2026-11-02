@@ -1,0 +1,35 @@
+name: renderer
+
+on:
+  pull_request:
+    paths:
+      - "crates/horizon-client-render/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/renderer.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  renderer:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: renderer
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libasound2-dev libudev-dev
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Run renderer tests
+        run: cargo test --locked -p horizon-client-render
+      - name: Run renderer Clippy
+        run: cargo clippy --locked -p horizon-client-render --all-targets -- -D warnings
