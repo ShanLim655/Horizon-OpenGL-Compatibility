@@ -41,6 +41,8 @@ jobs:
     needs: renderer
     runs-on: windows-latest
     timeout-minutes: 90
+    env:
+      RUSTFLAGS: -C target-feature=+crt-static
     defaults:
       run:
         shell: pwsh
