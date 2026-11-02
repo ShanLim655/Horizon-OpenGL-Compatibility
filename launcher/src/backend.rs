@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex};
 
 /// Game and launcher releases come from this fork (signed with its own key, release-keys.txt),
 /// never from upstream's `horizon-rust/horizon`: those would bring the account gate back.
-pub const REPO: &str = "gerdaroot/Horizon-Offline-Launcher";
+pub const REPO: &str = "ShanLim655/Horizon-OpenGL-Compatibility";
 /// Horizon's own repository: native mods' sources and commits this fork doesn't have come from it.
 pub const UPSTREAM_REPO: &str = "horizon-rust/horizon";
 pub const README_URL: &str =
