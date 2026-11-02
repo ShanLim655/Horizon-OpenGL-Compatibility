@@ -6,11 +6,14 @@ This fork publishes its own launcher and game releases. The launcher reads relea
 
 The launcher verifies every new game and launcher archive with an Ed25519 key compiled into it. A fork must use its own private key: the upstream private key is not available to this repository.
 
-Run this from the repository root on a trusted computer with Rust and GitHub CLI installed and authenticated:
+Run this from the repository root on a trusted Windows computer with Rust and GitHub CLI installed and authenticated:
 
 ```powershell
-cargo run --locked -p horizon-release-sign -- keygen --public-out crates/horizon-release-sign/release-keys.txt | gh secret set RELEASE_SIGNING_KEY --repo ShanLim655/Horizon-OpenGL-Compatibility
+gh auth login
+.\tools\ci\setup-fork-release-key.ps1
 ```
+
+The script runs the repository's key generator and pipes the private key directly into GitHub CLI. It does not print the private key.
 
 The command writes the public key to `crates/horizon-release-sign/release-keys.txt` and pipes the private key directly to GitHub as the repository Actions secret. It refuses to print the private key to an interactive terminal.
 
