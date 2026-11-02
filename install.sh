@@ -6,7 +6,7 @@
 # macOS: ~/Applications/Horizon Offline Launcher/, `horizon-offline-launcher` in ~/.local/bin.
 set -eu
 
-REPO="gerdaroot/Horizon-Offline-Launcher"
+REPO="ShanLim655/Horizon-OpenGL-Compatibility"
 BASE="https://github.com/$REPO/releases/latest/download"
 
 case "$(uname -s)" in
