@@ -5,7 +5,7 @@
 
 .DESCRIPTION
   One line, in PowerShell:
-    irm https://github.com/gerdaroot/Horizon-Offline-Launcher/releases/latest/download/install.ps1 | iex
+    irm https://github.com/ShanLim655/Horizon-OpenGL-Compatibility/releases/latest/download/install.ps1 | iex
 
   Or with a launcher you built yourself (build.ps1 does this for you):
     .\install.ps1 -Exe launcher\target\release\horizon-launcher.exe
