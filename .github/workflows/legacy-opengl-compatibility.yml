@@ -1,0 +1,93 @@
+name: legacy-opengl-compatibility
+
+on:
+  push:
+    branches:
+      - main
+      - compatibility/**
+    paths:
+      - "crates/horizon-client-render/**"
+      - "crates/horizon-client/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/legacy-opengl-compatibility.yml"
+  pull_request:
+    paths:
+      - "crates/horizon-client-render/**"
+      - "crates/horizon-client/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/legacy-opengl-compatibility.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: legacy-opengl-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  renderer-regression:
+    name: Renderer regression tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: legacy-opengl-renderer
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libasound2-dev libudev-dev
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Test renderer and shader paths
+        run: cargo test --locked -p horizon-client-render
+      - name: Check renderer
+        run: cargo check --locked -p horizon-client-render
+      - name: Lint renderer
+        run: cargo clippy --locked -p horizon-client-render --all-targets -- -D warnings
+
+  game-build:
+    name: Build game client (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-22.04
+            binary: target/release/horizon-client
+          - name: windows-x86_64
+            os: windows-latest
+            binary: target/release/horizon-client.exe
+            rustflags: -C target-feature=+crt-static
+    env:
+      RUSTFLAGS: ${{ matrix.rustflags }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: game-${{ matrix.name }}
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libasound2-dev libudev-dev
+      - name: Build game client
+        run: cargo build --release --locked -p horizon-client --bin horizon-client
+      - uses: actions/upload-artifact@v4
+        with:
+          name: horizon-opengl-compatibility-${{ matrix.name }}
+          path: ${{ matrix.binary }}
+          if-no-files-found: error
+          retention-days: 14
