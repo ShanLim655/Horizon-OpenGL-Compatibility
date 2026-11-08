@@ -165,7 +165,7 @@ mod tests {
         );
         let flat: Vec<[f32; 4]> = lights.iter().flatten().copied().collect();
 
-        assert_eq!(flat.len(), MAX * 2);
+        assert_eq!(flat.len(), lights.len() * 2);
         assert_eq!(flat[0], [10.0, 20.0, 30.0, 4.0]);
         assert_eq!(flat[1], [17.0 / 255.0, 34.0 / 255.0, 51.0 / 255.0, 0.25]);
         assert_eq!(flat[2], [40.0, 50.0, 60.0, 8.0]);
