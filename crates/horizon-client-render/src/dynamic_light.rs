@@ -159,9 +159,7 @@ mod tests {
             ([10.0, 20.0, 30.0], 0x112233, 4.0, 0.25),
             ([40.0, 50.0, 60.0], 0x445566, 8.0, 0.75),
         ];
-        sources.extend((0..(MAX - 2)).map(|i| {
-            ([100.0 + i as f64, 0.0, 0.0], 0xAABBCC, 2.0, 1.0)
-        }));
+        sources.extend((0..(MAX - 2)).map(|i| ([100.0 + i as f64, 0.0, 0.0], 0xAABBCC, 2.0, 1.0)));
         let lights = select_colored(sources.into_iter(), DVec3::ZERO);
         let flat: Vec<[f32; 4]> = lights.iter().flatten().copied().collect();
 
