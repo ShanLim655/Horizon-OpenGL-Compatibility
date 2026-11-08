@@ -155,17 +155,18 @@ mod tests {
 
     #[test]
     fn colored_light_records_flatten_to_the_shader_uniform_order() {
-        let lights = select_colored(
-            [
-                ([10.0, 20.0, 30.0], 0x112233, 4.0, 0.25),
-                ([40.0, 50.0, 60.0], 0x445566, 8.0, 0.75),
-            ]
-            .into_iter(),
-            DVec3::ZERO,
-        );
+        let mut sources = vec![
+            ([10.0, 20.0, 30.0], 0x112233, 4.0, 0.25),
+            ([40.0, 50.0, 60.0], 0x445566, 8.0, 0.75),
+        ];
+        sources.extend((0..(MAX - 2)).map(|i| {
+            ([100.0 + i as f64, 0.0, 0.0], 0xAABBCC, 2.0, 1.0)
+        }));
+        let lights = select_colored(sources.into_iter(), DVec3::ZERO);
         let flat: Vec<[f32; 4]> = lights.iter().flatten().copied().collect();
 
-        assert_eq!(flat.len(), lights.len() * 2);
+        assert_eq!(lights.len(), MAX);
+        assert_eq!(flat.len(), MAX * 2);
         assert_eq!(flat[0], [10.0, 20.0, 30.0, 4.0]);
         assert_eq!(flat[1], [17.0 / 255.0, 34.0 / 255.0, 51.0 / 255.0, 0.25]);
         assert_eq!(flat[2], [40.0, 50.0, 60.0, 8.0]);
